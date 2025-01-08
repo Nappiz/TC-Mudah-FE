@@ -1,3 +1,5 @@
+// src/app/page.tsx (atau sesuai struktur proyek Anda)
+
 "use client";
 
 import { motion } from "framer-motion";
@@ -5,8 +7,14 @@ import { FaBook, FaChalkboardTeacher, FaClock } from "react-icons/fa";
 import { FiChevronRight } from "react-icons/fi";
 import Link from "next/link";
 import Image from "next/image";
+import { useContext } from "react";
+import { AuthContext } from "./context/AuthContext"; // Sesuaikan path jika perlu
+import { useRouter } from "next/navigation"; // Impor useRouter
 
 const Home: React.FC = () => {
+  const { user } = useContext(AuthContext); // Mengakses 'user' dari AuthContext
+  const router = useRouter(); // Inisialisasi router
+
   return (
     <div>
       {/* Header Section */}
@@ -31,15 +39,15 @@ const Home: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="px-6 py-3 bg-blue-600 text-white font-medium rounded-md shadow-md hover:bg-blue-700 transition"
-                onClick={() => (window.location.href = "/daftar")}
+                onClick={() => router.push(user ? "/daftar" : "/login")} // Menggunakan router.push
               >
-                Get Started
+                {user ? "Join Now" : "Login"} {/* Kondisional rendering */}
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="px-6 py-3 bg-gray-100 text-blue-600 font-medium rounded-md shadow-md hover:bg-gray-200 transition flex items-center justify-center"
-                onClick={() => (window.location.href = "/learn-more")}
+                onClick={() => router.push("/learn-more")}
               >
                 Learn More <FiChevronRight className="ml-2" />
               </motion.button>
@@ -65,75 +73,75 @@ const Home: React.FC = () => {
 
       {/* Why Choose Us Section */}
       <section className="py-16 bg-white">
-      <div className="container mx-auto px-6 lg:px-16">
-        <motion.h2
-          className="text-3xl lg:text-4xl font-bold text-gray-800 text-center mb-12"
-          initial={{ y: 50, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          Why Choose <span className="text-blue-600">TC Mudah</span>?
-        </motion.h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 cursor-pointer">
-          {[
-            {
-              title: "Structured Material",
-              description: "Expertly designed for ease of learning.",
-              icon: <FaBook size={40} className="text-blue-600" />,
-              backgroundImage: "/images/material.png",
-              link: "/materi",
-            },
-            {
-              title: "Expert Mentors",
-              description: "Learn directly from experienced mentors.",
-              icon: <FaChalkboardTeacher size={40} className="text-blue-600" />,
-              backgroundImage: "/images/mentor.png",
-              link: "/mentor",
-            },
-            {
-              title: "Learn Anytime",
-              description: "Flexible schedules that fit your lifestyle.",
-              icon: <FaClock size={40} className="text-blue-600" />,
-              backgroundImage: "/images/timeline.png",
-              link: "/timeline",
-            },
-          ].map((feature, index) => (
-            <Link href={feature.link} key={index}>
-              <motion.div
-                className="relative p-16 bg-gray-50 border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition"
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
-                viewport={{ once: true }}
-              >
-                {/* Background Image with Blur */}
-                <div className="absolute inset-0">
-                  <Image
-                    src={feature.backgroundImage}
-                    alt={feature.title}
-                    layout="fill"
-                    objectFit="cover"
-                    className="filter blur-sm opacity-20"
-                    priority
-                  />
-                </div>
-                {/* Foreground Content */}
-                <div className="relative z-10 text-center">
-                  <div className="flex items-center justify-center mb-4">
-                    {feature.icon}
+        <div className="container mx-auto px-6 lg:px-16">
+          <motion.h2
+            className="text-3xl lg:text-4xl font-bold text-gray-800 text-center mb-12"
+            initial={{ y: 50, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            Why Choose <span className="text-blue-600">TC Mudah</span>?
+          </motion.h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 cursor-pointer">
+            {[
+              {
+                title: "Structured Material",
+                description: "Expertly designed for ease of learning.",
+                icon: <FaBook size={40} className="text-blue-600" />,
+                backgroundImage: "/images/material.png",
+                link: "/materi",
+              },
+              {
+                title: "Expert Mentors",
+                description: "Learn directly from experienced mentors.",
+                icon: <FaChalkboardTeacher size={40} className="text-blue-600" />,
+                backgroundImage: "/images/mentor.png",
+                link: "/mentor",
+              },
+              {
+                title: "Learn Anytime",
+                description: "Flexible schedules that fit your lifestyle.",
+                icon: <FaClock size={40} className="text-blue-600" />,
+                backgroundImage: "/images/timeline.png",
+                link: "/timeline",
+              },
+            ].map((feature, index) => (
+              <Link href={feature.link} key={index}>
+                <motion.div
+                  className="relative p-16 bg-gray-50 border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition"
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.2 }}
+                  viewport={{ once: true }}
+                >
+                  {/* Background Image dengan efek blur */}
+                  <div className="absolute inset-0">
+                    <Image
+                      src={feature.backgroundImage}
+                      alt={feature.title}
+                      layout="fill"
+                      objectFit="cover"
+                      className="filter blur-sm opacity-20"
+                      priority
+                    />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800">
-                    {feature.title}
-                  </h3>
-                  <p className="mt-2 text-gray-600">{feature.description}</p>
-                </div>
-              </motion.div>
-            </Link>
-          ))}
+                  {/* Konten Foreground */}
+                  <div className="relative z-10 text-center">
+                    <div className="flex items-center justify-center mb-4">
+                      {feature.icon}
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-800">
+                      {feature.title}
+                    </h3>
+                    <p className="mt-2 text-gray-600">{feature.description}</p>
+                  </div>
+                </motion.div>
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
       {/* Testimonials Section */}
       <section className="py-16 bg-gray-50">
@@ -213,9 +221,9 @@ const Home: React.FC = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="px-10 py-4 bg-blue-600 text-white font-medium rounded-md shadow-md hover:bg-blue-700 transition"
-            onClick={() => (window.location.href = "/daftar")}
+            onClick={() => router.push(user ? "/daftar" : "/login")} // Menggunakan router.push
           >
-            Join Now
+            {user ? "Join Now" : "Login"} {/* Kondisional rendering */}
           </motion.button>
         </div>
       </section>

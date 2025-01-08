@@ -1,9 +1,16 @@
+// src/app/login/page.tsx
+
 "use client";
 
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { useRouter } from "next/navigation";
 import { FaEnvelope, FaLock } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { AuthContext } from "../context/AuthContext"; // Sesuaikan path jika perlu
 
 export default function Login() {
+  const router = useRouter();
+  const { login } = useContext(AuthContext); // Menggunakan AuthContext
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -14,10 +21,48 @@ export default function Login() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login submitted:", formData);
-    // Tambahkan logika autentikasi di sini
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json", // Disarankan
+        },
+        body: JSON.stringify(formData),
+      });
+
+      // Jika response gagal
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Login error:", errorData);
+        toast.error(`Login failed: ${errorData.message || "Unknown error"}`);
+        return;
+      }
+
+      // Jika sukses, ambil data
+      const data = await response.json();
+      console.log("Login success:", data);
+
+      // Simpan token & user menggunakan AuthContext
+      if (data.token && data.user) {
+        login(data.user, data.token);
+      } else {
+        toast.error("Invalid response from server.");
+        return;
+      }
+
+      // Tampilkan toast
+      toast.success("Login success! Redirecting...");
+
+      // Redirect ke home
+      router.replace("/");
+    } catch (error: any) {
+      console.error("Login exception:", error);
+      toast.error("An error occurred during login");
+    }
   };
 
   return (
@@ -44,7 +89,7 @@ export default function Login() {
                 type="email"
                 name="email"
                 value={formData.email}
-                onChange={handleChange} 
+                onChange={handleChange}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition text-gray-600"
                 placeholder="you@example.com"
                 required

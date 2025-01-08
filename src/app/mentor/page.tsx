@@ -195,38 +195,6 @@ const MentorsPage: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* Call to Action Section */}
-      <section className="py-16 bg-gray-50 text-gray-800 text-center">
-        <div className="container mx-auto px-6 lg:px-16">
-          <motion.h2
-            className="text-3xl lg:text-4xl font-bold mb-6"
-            initial={{ scale: 0.8, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            Ready to Learn from the Best?
-          </motion.h2>
-          <motion.p
-            className="text-lg lg:text-xl font-light max-w-2xl mx-auto mb-8"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            viewport={{ once: true }}
-          >
-            Join our platform and start your learning journey with guidance from top professionals.
-          </motion.p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-10 py-4 bg-blue-600 text-white font-medium rounded-md shadow-md hover:bg-blue-700 transition"
-            onClick={() => (window.location.href = "/daftar")}
-          >
-            Get Started
-          </motion.button>
-        </div>
-      </section>
     </div>
   );
 };

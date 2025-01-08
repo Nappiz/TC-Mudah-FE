@@ -1,45 +1,76 @@
+// src/app/components/navbar/navbar.tsx
+
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AiOutlineHome, AiOutlineLogin, AiOutlineUserAdd, AiOutlineClose, AiOutlineAccountBook,} from "react-icons/ai";
+import {
+  AiOutlineHome,
+  AiOutlineLogin,
+  AiOutlineUserAdd,
+  AiOutlineClose,
+} from "react-icons/ai";
 import { FaBook, FaChalkboardTeacher, FaClock } from "react-icons/fa";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { AuthContext } from "../../context/AuthContext"; // Pastikan path benar
+
+interface MenuItem {
+  href: string;
+  label: string;
+  icon: React.ReactElement;
+}
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
-  const pathname = usePathname();
+  const [showDropdown, setShowDropdown] = useState<boolean>(false);
+  const { user, logout } = useContext(AuthContext); // Menggunakan AuthContext
 
+  const pathname = usePathname();
+  const dropdownRef = useRef<HTMLDivElement>(null); // Tetapkan tipe ref sebagai HTMLDivElement
+
+  // Tutup menu dan dropdown saat berpindah halaman
   useEffect(() => {
     setIsMenuOpen(false);
+    setShowDropdown(false);
   }, [pathname]);
 
+  // Klik di luar dropdown untuk menutupnya
   useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      const navbar = document.getElementById("navbar");
-      const menuButton = document.getElementById("menu-button");
-
-      if(isMenuOpen && navbar && !navbar.contains(target) && menuButton && !menuButton.contains(target)) setIsMenuOpen(false);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        showDropdown &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
     };
 
-    if(isMenuOpen) document.addEventListener("click", handleOutsideClick);
-
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("click", handleOutsideClick);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isMenuOpen]);
+  }, [showDropdown]);
 
-  const menuItems = [
+  // Definisikan menuItems dengan kondisi yang tepat
+  const menuItems: MenuItem[] = [
     { href: "/", label: "Home", icon: <AiOutlineHome /> },
-    { href: "/login", label: "Login", icon: <AiOutlineLogin /> },
-    { href: "/register", label: "Register", icon: <AiOutlineUserAdd /> },
     { href: "/materi", label: "Material", icon: <FaBook /> },
-    { href: "/mentor", label: "Mentors", icon: <FaChalkboardTeacher />},
+    { href: "/mentor", label: "Mentors", icon: <FaChalkboardTeacher /> },
     { href: "/timeline", label: "Timeline", icon: <FaClock /> },
   ];
+
+  // Tambahkan 'Daftar' hanya jika pengguna sudah login
+  if (user) {
+    menuItems.push({ href: "/daftar", label: "Daftar", icon: <AiOutlineUserAdd /> });
+  }
+
+  // Tambahkan 'Login' hanya jika pengguna belum login
+  if (!user) {
+    menuItems.push({ href: "/login", label: "Login", icon: <AiOutlineLogin /> });
+  }
 
   return (
     <nav className="bg-white shadow-md sticky top-0 w-full z-50">
@@ -65,9 +96,7 @@ const Navbar: React.FC = () => {
               <Link
                 href={item.href}
                 className={`flex items-center text-blue-600 hover:text-blue-800 transition ${
-                  pathname === item.href
-                    ? "border-b-2 border-blue-600 pb-1"
-                    : ""
+                  pathname === item.href ? "border-b-2 border-blue-600 pb-1" : ""
                 }`}
               >
                 <span className="mr-1">{item.icon}</span>
@@ -75,15 +104,49 @@ const Navbar: React.FC = () => {
               </Link>
             </li>
           ))}
-          {/* Daftar Button */}
-          <li>
-            <Link
-              href="/daftar"
-              className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 transition"
-            >
-              Daftar
-            </Link>
-          </li>
+
+          {/* Jika sudah login -> tampilkan nama user & avatar */}
+          {user && (
+            <li className="relative">
+              <button
+                onClick={() => setShowDropdown((prev) => !prev)}
+                className="flex items-center space-x-2 focus:outline-none"
+              >
+                {/* Avatar bisa diganti dengan URL avatar user jika tersedia */}
+                <Image
+                  src="/images/logo.png" // Ganti dengan avatar user jika ada
+                  alt="Profile Avatar"
+                  width={30}
+                  height={30}
+                  className="rounded-full object-cover"
+                />
+                <span className="text-blue-600 font-medium">{user.name}</span>
+              </button>
+              {/* Dropdown */}
+              <AnimatePresence>
+                {showDropdown && (
+                  <motion.div
+                    ref={dropdownRef} // Tetapkan ref ke <motion.div>
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                  >
+                    <button
+                      onClick={() => {
+                        logout();
+                        setShowDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
+                    >
+                      Logout
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </li>
+          )}
         </ul>
 
         {/* Mobile Menu Button */}
@@ -124,16 +187,34 @@ const Navbar: React.FC = () => {
                   </Link>
                 </li>
               ))}
-              {/* Daftar Button */}
-              <li>
-                <Link
-                  href="/daftar"
-                  className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 transition text-center"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Daftar
-                </Link>
-              </li>
+
+              {/* Jika sudah login -> tampilkan nama user & avatar di mobile */}
+              {user && (
+                <>
+                  <li className="flex items-center space-x-2">
+                    <Image
+                      src="/images/logo.png" // Ganti dengan avatar user jika ada
+                      alt="Profile Avatar"
+                      width={30}
+                      height={30}
+                      className="rounded-full object-cover"
+                    />
+                    <span className="text-blue-600 font-medium">{user.name}</span>
+                  </li>
+                  {/* Tombol Logout di mobile */}
+                  <li>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-md transition"
+                    >
+                      Logout
+                    </button>
+                  </li>
+                </>
+              )}
             </ul>
           </motion.div>
         )}

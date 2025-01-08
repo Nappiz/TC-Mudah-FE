@@ -1,9 +1,16 @@
+// src/app/register/page.tsx
+
 "use client";
 
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { useRouter } from "next/navigation";
 import { FaEnvelope, FaLock, FaUser } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { AuthContext } from "../context/AuthContext"; // Sesuaikan path jika perlu
 
 export default function Register() {
+  const router = useRouter();
+  const { login } = useContext(AuthContext); // Menggunakan AuthContext
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -12,12 +19,48 @@ export default function Register() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json", // Disarankan
+        },
+        body: JSON.stringify(formData),
+      });
+
+      // Jika response gagal
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Register error:", errorData);
+        toast.error(`Register failed: ${errorData.message || "Unknown error"}`);
+        return;
+      }
+
+      // Jika sukses, ambil data
+      const data = await response.json();
+      console.log("Register success:", data);
+
+      // Simpan token & user menggunakan AuthContext jika register otomatis login
+      if (data.token && data.user) {
+        login(data.user, data.token);
+      }
+
+      // Tampilkan toast
+      toast.success("Register success! Redirecting...");
+
+      // Redirect ke home
+      router.replace("/");
+    } catch (error: any) {
+      console.error("Register exception:", error);
+      toast.error("An error occurred during registration");
+    }
   };
 
   return (
